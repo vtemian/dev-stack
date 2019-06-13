@@ -1,0 +1,29 @@
+apiVersion: skaffold/v1beta7
+kind: Config
+build:
+  artifacts:
+  - image: gcr.io/vlads-ureactor/dev-stack
+deploy:
+  helm:
+    releases:
+    - name: dev-dev-stack-stackcomposer
+      chartPath: chart/wordpress-site
+      values:
+        image: gcr.io/vlads-ureactor/dev-stack
+      setValues:
+        site.domains[0]: dev-stack-stackcomposer.localstack.pl
+      skipBuildDependencies: false
+      imageStrategy:
+        helm: {}
+profiles:
+  - name: production
+    activation:
+      - command: deploy
+        kubeContext: default
+    patches:
+      - op: replace
+        path: /deploy/helm/releases/0/name
+        value: dev-stack-stackcomposer
+      - op: replace
+        path: /deploy/helm/releases/0/setValues/site.domains[0]
+        value: dev-stack.trystack.online
